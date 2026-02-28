@@ -8,7 +8,9 @@ import (
 
 func main() {
 	scrapers := []scraper.Scraper{
-		scraper.PokemonScraper{},
+		scraper.PokemonScraper{
+			URL: "https://www.amiami.jp/top/detail/detail?gcode=CARD-00022985",
+		},
 	}
 
 	for _, s := range scrapers {

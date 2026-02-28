@@ -4,6 +4,7 @@ type StockResult struct {
 	ProductName string 
 	Price int
 	InStock bool
+	Status string
 	URL  string
 }
 
