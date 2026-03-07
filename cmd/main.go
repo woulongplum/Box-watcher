@@ -1,29 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/woulongplum/Box-watcher/internal/scraper"
+	"github.com/woulongplum/Box-watcher/internal/service"
 )
 
 func main() {
-	scrapers := []scraper.Scraper{
-		scraper.PokemonScraper{
-			URL: "https://www.amiami.jp/top/detail/detail?gcode=CARD-00022985",
-		},
+
+	surugayaScraper := scraper.SurugayaScraper{}
+
+	pokemonService := service.PokemonService{
+		Scraper: surugayaScraper,
 	}
 
-	for _, s := range scrapers {
-		result , err := s.CheckStock()
-		if err != nil {
-			fmt.Printf("Error checking stock: %v\n", err)
-			continue
-		}
+	_, err := pokemonService.Execute()
 
-		fmt.Println("商品名:", result.ProductName) 
-		fmt.Println("価格:", result.Price) 
-		fmt.Println("在庫:", result.InStock) 
-		fmt.Println("URL:", result.URL) 
-		fmt.Println("------")
+	if err != nil {
+		log.Fatalf("エラーが発生しました: %v", err)
 	}
 }

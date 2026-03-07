@@ -1,0 +1,8 @@
+package model
+
+type Item struct {
+	Name string 
+	Price int
+	InStock bool
+	Source string
+}

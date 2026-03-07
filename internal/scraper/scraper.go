@@ -1,15 +1,11 @@
 package scraper
 
-type StockResult struct {
-	ProductName string 
-	Price int
-	InStock bool
-	Status string
-	URL  string
-}
+import (
+	"github.com/woulongplum/Box-watcher/internal/model"
+)
 
 type Scraper interface {
-	CheckStock()(StockResult, error)
+	CheckStock(url string)(model.Item, error)
 }
 
 
