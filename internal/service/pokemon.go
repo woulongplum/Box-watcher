@@ -1,8 +1,8 @@
 package service
 
 import (
-	
 	"fmt"
+	"time"
 
 	"github.com/woulongplum/Box-watcher/internal/model"
 	"github.com/woulongplum/Box-watcher/internal/scraper"
@@ -12,19 +12,27 @@ type PokemonService struct {
 	Scraper scraper.SurugayaScraper
 }
 
-func (s PokemonService) Execute() (model.Item, error) {
+func (s PokemonService) Execute(urls []string) ([]model.Item, error) {
 
-	targetURL := "https://www.suruga-ya.jp/product/detail/630028446"
+	var results []model.Item
 
-	item,err := s.Scraper.Parse(targetURL)
-	if err != nil {
-		return model.Item{}, fmt.Errorf("在庫チェックに失敗しました: %w", err)
+	for _, targetURL := range urls {
+		item, err := s.Scraper.Parse(targetURL)
+		if err != nil {
+			fmt.Printf("調査スキップ [%s]: %v\n", targetURL, err)
+			continue
+		}
+
+		if item.InStock {
+			fmt.Printf("【速報】%s の在庫があります！\n", item.Name)
+		} else {
+			fmt.Printf("%s は在庫切れです。\n", item.Name)
+		}
+
+		results = append(results, item)
+
+		time.Sleep(1 * time.Second) // サーバーへの負荷を避けるために少し待機
 	}
 
-	if item.InStock {
-		fmt.Printf("【速報】%s の在庫があります！\n", item.Name)
-	} else {
-		fmt.Printf("%s は在庫切れです。\n", item.Name)
-	}
-	return item, nil
+	return results, nil
 }
