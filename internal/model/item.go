@@ -1,8 +1,8 @@
 package model
 
 type Item struct {
-	Name string 
-	Price int
+	Name    string
+	Price   int
 	InStock bool
-	Source string
+	Source  string
 }

@@ -5,7 +5,5 @@ import (
 )
 
 type Scraper interface {
-	CheckStock(url string)(model.Item, error)
+	CheckStock(url string) (model.Item, error)
 }
-
-
