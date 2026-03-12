@@ -3,15 +3,26 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/woulongplum/Box-watcher/internal/notifier"
 	"github.com/woulongplum/Box-watcher/internal/scraper"
 	"github.com/woulongplum/Box-watcher/internal/service"
 )
 
+
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("エラー：.envファイルが見つかりません。")
+	}
+
 	for {
+		webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
+
 		surugayaScraper := scraper.SurugayaScraper{}
 
 		pokemonService := service.PokemonService{
@@ -28,8 +39,10 @@ func main() {
 
 		if err != nil {
 			log.Printf("調査中にエラーが発生しましたが続行します: %v", err)
-		} else {
-			log.Printf("調査完了: %d 件のアイテムを確認", len(results))
+		} else if len(results) > 0 {
+			msg := fmt.Sprintf("【在庫あり！】%d 件のアイテムが見つかりました", len(results))
+			notifier.SendDiscordNotification(webhookURL,msg)
+			log.Printf("通知を送信しました")
 		}
 
 		fmt.Println("５分間休憩します...")
