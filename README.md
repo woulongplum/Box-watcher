@@ -1,0 +1,39 @@
+# Box-Watcher
+
+ECサイトの在庫状況を監視し、Discordへ通知を送るためのGo製CLIツールです。
+
+## ✨ 特徴
+- **自動監視**: 指定した商品ページの在庫状況を定期的にチェックします。
+- **即時通知**: 在庫が確認された場合、DiscordのWebhookを使用して即座に通知します。
+- **セキュアな設計**: APIキーやWebhook URLなどの秘匿情報は `.env` ファイルで管理し、Gitへコミットされない設計になっています。
+
+## 🛠 技術スタック
+- **言語**: Go
+- **スクレイピング**: `PuerkitoBio/goquery`
+- **環境変数管理**: `joho/godotenv`
+
+## 🚀 セットアップ手順
+
+### 1. リポジトリのクローン
+```bash
+git clone <あなたのリポジトリURL>
+cd Box-watcher
+
+### 2. 環境変数の設定
+.env ファイルを作成し、必要な設定を記述してください。
+
+DISCORD_WEBHOOK_URL=あなたのWebhookURL
+
+### 3.実行方法
+
+go mod tidy
+go run cmd/main.go
+
+📈 開発進捗・ロードマップ
+[x] 在庫監視機能
+[x] Discord通知機能
+[x] .envによるセキュリティ管理
+[ ] データベース(PostgreSQL)の導入
+[ ] クリーンアーキテクチャへのリファクタリング
+[ ] 並列処理(Goroutine)の活用
+[ ] Dockerによる環境構築の自動化
