@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: box-watcher-db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: box_watcher
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
