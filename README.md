@@ -33,7 +33,8 @@ go run cmd/main.go
 [x] 在庫監視機能
 [x] Discord通知機能
 [x] .envによるセキュリティ管理
-[ ] データベース(PostgreSQL)の導入
+[x] データベース(PostgreSQL)の導入
+[x] Dockerによる環境構築の自動化
 [ ] クリーンアーキテクチャへのリファクタリング
 [ ] 並列処理(Goroutine)の活用
-[ ] Dockerによる環境構築の自動化
+[ ] マルチサイト対応
