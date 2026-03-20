@@ -1,8 +1,16 @@
 package model
 
+import (
+	"gorm.io/gorm"
+	"time"
+)
+
 type Item struct {
-	Name    string
-	Price   int
-	InStock bool
-	Source  string
+	gorm.Model
+	Name string `gorm:"not null"`
+	URL string	`gorm:"uniqueIndex;not null"`
+	Price int
+	InStock bool	`gorm:"default:false"`
+	Source string
+	LastNotifiedAt *time.Time
 }

@@ -31,6 +31,7 @@ func (s SurugayaScraper) Parse(url string) (model.Item, error) {
 
 	return model.Item{
 		Name:    name,
+		URL: url,
 		InStock: inStock,
 		Source:  "Surugaya",
 	}, nil
