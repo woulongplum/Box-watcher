@@ -11,6 +11,9 @@ type Item struct {
 	URL string	`gorm:"uniqueIndex;not null"`
 	Price int
 	InStock bool	`gorm:"default:false"`
-	Source string
+	Source string `gorm:"index"`
+	Status string
 	LastNotifiedAt *time.Time
+
+
 }

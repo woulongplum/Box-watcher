@@ -29,10 +29,16 @@ func (s SurugayaScraper) Parse(url string) (model.Item, error) {
 		inStock = false
 	}
 
+	finalStatus := "在庫あり"
+	if !inStock {
+		finalStatus = "在庫なし"
+	}
+
 	return model.Item{
 		Name:    name,
 		URL: url,
 		InStock: inStock,
 		Source:  "Surugaya",
+		Status: finalStatus,
 	}, nil
 }

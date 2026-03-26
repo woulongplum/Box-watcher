@@ -11,7 +11,7 @@ import (
 	"github.com/woulongplum/Box-watcher/internal/repository"
 	"github.com/woulongplum/Box-watcher/internal/scraper"
 	"github.com/woulongplum/Box-watcher/internal/service"
-	"gorm.io/gorm/clause"
+	
 )
 
 
@@ -26,6 +26,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("DBの初期化に失敗しました: %v", err)
 	}
+
+	itemRepo := repository.NewItemRepository(db)
 	log.Printf("データベースの準備が整いました: %T", db)
 
 	for {
@@ -51,19 +53,10 @@ func main() {
 
 			for _ , item := range results {
 
-
-				result := db.Clauses(clause.OnConflict{
-
-					Columns: []clause.Column{{Name: "url"}},
-
-					DoUpdates: clause.AssignmentColumns([]string{
-						"name", "price", "in_stock", "updated_at",
-					}),
-				}).Create(&item)
-
-				if result.Error != nil {
-					log.Printf("DB保存エラー: %v", result.Error)
+				if err := itemRepo.Upsert(&item); err != nil {
+					log.Printf("DB保存エラー: %v", err)
 				}
+
 			}
 			msg := fmt.Sprintf("【在庫あり！】%d 件のアイテムが見つかりました", len(results))
 			notifier.SendDiscordNotification(webhookURL,msg)
