@@ -10,7 +10,11 @@ import (
 
 type SurugayaScraper struct{}
 
-func (s SurugayaScraper) Parse(url string) (model.Item, error) {
+func NewSurugayaScraper() *SurugayaScraper {
+	return &SurugayaScraper{}
+}
+
+func (s SurugayaScraper) CheckStock(url string) (model.Item, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return model.Item{}, err

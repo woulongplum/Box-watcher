@@ -9,7 +9,7 @@ import (
 )
 
 type PokemonService struct {
-	Scraper scraper.SurugayaScraper
+	Scraper scraper.Scraper
 }
 
 func (s PokemonService) Execute(urls []string) ([]model.Item, error) {
@@ -17,7 +17,7 @@ func (s PokemonService) Execute(urls []string) ([]model.Item, error) {
 	var results []model.Item
 
 	for _, targetURL := range urls {
-		item, err := s.Scraper.Parse(targetURL)
+		item, err := s.Scraper.CheckStock(targetURL)
 		if err != nil {
 			fmt.Printf("調査スキップ [%s]: %v\n", targetURL, err)
 			continue
