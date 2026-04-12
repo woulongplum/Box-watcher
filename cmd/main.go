@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 	"time"
 
-	"github.com/woulongplum/Box-watcher/internal/model"
 	"github.com/joho/godotenv"
+	"github.com/woulongplum/Box-watcher/internal/model"
 	"github.com/woulongplum/Box-watcher/internal/notifier"
 	"github.com/woulongplum/Box-watcher/internal/repository"
 	"github.com/woulongplum/Box-watcher/internal/scraper"
 	"github.com/woulongplum/Box-watcher/internal/service"
-	
 )
 
 
@@ -49,22 +49,39 @@ func main() {
 			"https://item.rakuten.co.jp/digitamin/yc172764/",
 		}
 
-		// --- 駿河屋の調査実行 ---
-		sService := service.PokemonService{Scraper: surugayaScraper}
-		sResults, sErr := sService.Execute(surugayaUrls)
-		if sErr != nil {
-			log.Printf("駿河屋の調査中にエラーが発生しました: %v", sErr)
-		}
+		var wg sync.WaitGroup
+		var mu sync.Mutex
+		allResults := []model.Item{}
 
-		// --- 楽天の調査実行 ---
-		rService := service.PokemonService{Scraper: rakutenScraper}
-		rResults, rErr := rService.Execute(rakutenUrls)
-		if rErr != nil {
-			log.Printf("楽天の調査中にエラーが発生しました: %v", rErr)
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			sService := service.PokemonService{Scraper: surugayaScraper}
+			results, err:= sService.Execute(surugayaUrls)
+			if err == nil {
+				mu.Lock()
+				allResults = append(allResults, results...)
+				mu.Unlock()
+			}
+		}()
 
-		// --- 結果の合体と処理 ---
-		allResults := append(sResults, rResults...)
+		wg.Add(1) // もう1人追加
+		go func() {
+			defer wg.Done() // 終わったら報告
+			rService := service.PokemonService{Scraper: rakutenScraper}
+			results, err := rService.Execute(rakutenUrls)
+			if err == nil {
+				mu.Lock() // メモ帳に鍵をかける
+				allResults = append(allResults, results...)
+				mu.Unlock() // 鍵をあける
+			}
+		}()
+
+		wg.Wait()
+
+
+
+		
 
 		// 在庫があるアイテムだけをピックアップする
 		var foundItems []model.Item
