@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
+	
 	"time"
 
 	"github.com/joho/godotenv"
@@ -40,49 +40,27 @@ func main() {
 		webhookURL := os.Getenv("DISCORD_WEBHOOK_URL")
 
 		// --- 調査対象URLの設定 ---
-		surugayaUrls := []string{
-			"https://www.suruga-ya.jp/product/detail/630028922",
-			"https://www.suruga-ya.jp/product/detail/630028446",
-			"https://www.suruga-ya.jp/product/detail/630027321",
+	
+		tasks := []service.ScrapeTask{
+			{
+				Scraper: surugayaScraper,
+				Urls: []string{
+					"https://www.suruga-ya.jp/product/detail/630028922",
+					"https://www.suruga-ya.jp/product/detail/630028446",
+					"https://www.suruga-ya.jp/product/detail/630027321",
+				},
+			},
+			{
+				Scraper: rakutenScraper,
+				Urls: []string{
+					"https://item.rakuten.co.jp/digitamin/yc172764/",
+				},
+			},
 		}
-		rakutenUrls := []string{
-			"https://item.rakuten.co.jp/digitamin/yc172764/",
-		}
-
-		var wg sync.WaitGroup
 		
-		resultChan := make(chan []model.Item,2)
+		
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			sService := service.PokemonService{Scraper: surugayaScraper}
-			results, err:= sService.Execute(surugayaUrls)
-			if err == nil {
-				resultChan <- results
-			}
-		}()
-
-		wg.Add(1) // もう1人追加
-		go func() {
-			defer wg.Done() // 終わったら報告
-			rService := service.PokemonService{Scraper: rakutenScraper}
-			results, err := rService.Execute(rakutenUrls)
-			if err == nil {
-				resultChan <- results
-			}
-		}()
-
-		go func ()  {
-			wg.Wait()
-			close(resultChan)
-		}()
-
-			allResults := []model.Item{}
-
-			for results := range resultChan {
-				allResults = append(allResults,results...)
-			}
+		allResults := service.PokemonService{}.FetchAllParallel(tasks)
 
 		
 

@@ -2,14 +2,51 @@ package service
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/woulongplum/Box-watcher/internal/model"
 	"github.com/woulongplum/Box-watcher/internal/scraper"
 )
 
+type ScrapeTask struct {
+	Scraper scraper.Scraper
+	Urls []string
+}
+
 type PokemonService struct {
 	Scraper scraper.Scraper
+	
+}
+
+func (s PokemonService) FetchAllParallel(tasks []ScrapeTask) []model.Item {
+	var wg sync.WaitGroup
+
+	resultChan := make(chan []model.Item , len(tasks))
+
+	for _ , task := range tasks {
+		wg.Add(1)
+		go func (t ScrapeTask)  {
+			defer wg.Done()
+
+			results , err := PokemonService{Scraper: t.Scraper}.Execute(t.Urls)
+			if err == nil {
+				resultChan <- results
+			}
+		}(task)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	var allResults []model.Item
+	for res := range resultChan {
+		allResults = append(allResults, res...)
+	}
+
+	return allResults
 }
 
 func (s PokemonService) Execute(urls []string) ([]model.Item, error) {
