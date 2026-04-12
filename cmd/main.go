@@ -50,8 +50,8 @@ func main() {
 		}
 
 		var wg sync.WaitGroup
-		var mu sync.Mutex
-		allResults := []model.Item{}
+		
+		resultChan := make(chan []model.Item,2)
 
 		wg.Add(1)
 		go func() {
@@ -59,9 +59,7 @@ func main() {
 			sService := service.PokemonService{Scraper: surugayaScraper}
 			results, err:= sService.Execute(surugayaUrls)
 			if err == nil {
-				mu.Lock()
-				allResults = append(allResults, results...)
-				mu.Unlock()
+				resultChan <- results
 			}
 		}()
 
@@ -71,20 +69,26 @@ func main() {
 			rService := service.PokemonService{Scraper: rakutenScraper}
 			results, err := rService.Execute(rakutenUrls)
 			if err == nil {
-				mu.Lock() // メモ帳に鍵をかける
-				allResults = append(allResults, results...)
-				mu.Unlock() // 鍵をあける
+				resultChan <- results
 			}
 		}()
 
-		wg.Wait()
+		go func ()  {
+			wg.Wait()
+			close(resultChan)
+		}()
 
+			allResults := []model.Item{}
 
+			for results := range resultChan {
+				allResults = append(allResults,results...)
+			}
 
 		
 
 		// 在庫があるアイテムだけをピックアップする
-		var foundItems []model.Item
+		inStockItems := []model.Item{}
+
 		for _, item := range allResults {
 			// DBを更新（在庫の有無に関わらず最新状態を保存）
 			if err := itemRepo.Upsert(&item); err != nil {
@@ -93,15 +97,15 @@ func main() {
 
 			// 在庫ありなら通知用リストに追加
 			if item.InStock {
-				foundItems = append(foundItems, item)
+				inStockItems = append(inStockItems, item)
 			}
 		}
 
 		// 在庫ありの商品が1つでもあればDiscordに通知
-		if len(foundItems) > 0 {
-			msg := fmt.Sprintf("【在庫あり速報！】\n%d 件のアイテムが入荷しています！確認してください。", len(foundItems))
+		if len(inStockItems) > 0 {
+			msg := fmt.Sprintf("【在庫あり速報！】\n%d 件のアイテムが入荷しています！確認してください。", len(inStockItems))
 			notifier.SendDiscordNotification(webhookURL, msg)
-			log.Printf("Discordに通知を送信しました（対象: %d件）", len(foundItems))
+			log.Printf("Discordに通知を送信しました（対象: %d件）", len(inStockItems))
 		}
 
 		fmt.Println("--- 今回の巡回を終了しました。5分間休憩します ---")
