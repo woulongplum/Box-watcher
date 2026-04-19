@@ -36,5 +36,5 @@ go run cmd/main.go
 [x] データベース(PostgreSQL)の導入
 [x] Dockerによる環境構築の自動化
 [ ] クリーンアーキテクチャへのリファクタリング
-[ ] 並列処理(Goroutine)の活用
+[x] 並列処理(Goroutine)の活用
 [ ] マルチサイト対応
